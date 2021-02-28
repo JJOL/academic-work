@@ -10,7 +10,17 @@
     <style>
         #secc-presentacion {
             width: 100%;
-            height: 100vh;
+            min-height: 100vh;
+        }
+
+        .present-label {
+            font-size: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .present-label {
+                font-size: 2.3rem;
+            }
         }
 
         #canvas-container {
@@ -52,10 +62,10 @@
 </head>
 <body>
 
-    <section id="secc-presentacion" class="text-center">
+    <section id="secc-presentacion" class="text-center d-block">
         <div class="container">
 
-            <p class="display-4 my-5">
+            <p class="present-label py-4">
                 Tu amigo México estuvo en terapia unos días y obtuvo un diagnóstico:
             </p>
             <section class="text-left">
@@ -82,9 +92,9 @@
                     </div>
                 </div>
             </section>
-            <p class="display-4 my-5"><i>¿El diagnóstico sera atinado?</i></p>
+            <p class="present-label my-5"><i>¿El diagnóstico sera atinado?</i></p>
             
-            <p class="display-4 my-5 pb-5">Investígalo en el Museo Mexicano de Mitos Traumáticos</p>
+            <p class="present-label my-5">Investígalo en el Museo Mexicano de Mitos Traumáticos</p>
 
             
     
@@ -92,42 +102,46 @@
         </div>
     </section>
 
-    <section id="secc-museo" >
+    <section id="secc-museo" class="mt-5">
         <div class="container">
-            <h1 class="display-3 text-center">MuMeMiT</h1>
-            <h2 class="display-4 text-center mb-5">Museo Mexicano de Mitos Traumáticos</h2>
+            <h1 class="d-md-none">MuMeMiT</h1>
+            <h2 class="d-md-none">Museo Mexicano de Mitos Traumáticos</h2>
+            <h1 class="display-3 text-center d-none d-md-block">MuMeMiT</h1>
+            <h2 class="display-4 text-center mb-5 d-none d-md-block">Museo Mexicano de Mitos Traumáticos</h2>
+
+
 
             <div class="row">
 
-                <div class="col-6 museo-marco" data-element="mito-indigena">
+                <div class="col-md-6 museo-marco" data-element="mito-indigena">
                     <img src="./assets/Imperio-azteca.jpg" style="width: 100%;" class="border border-secondary">
                     <p class="lead border border-secondary d-inline-block p-2">El glorioso imperio indígena</p>
                 </div>
-                <div class="col-6 museo-marco" data-element="mito-conquista">
+                <div class="col-md-6 museo-marco" data-element="mito-conquista">
                     <img src="./assets/conquista-de-mexico.jpg" style="width: 100%;">
                     <p class="lead border border-secondary d-inline-block p-2">La conquista de México</p>
                 </div>
-                <div class="col-4 museo-marco"  data-element="mito-malinche">
+                <div class="col-md-4 museo-marco"  data-element="mito-malinche">
                     <img src="./assets/cortes-malinche-moctezuma.jpg" style="width: 100%;">
                     <p class="lead border border-secondary d-inline-block p-2">Cortés y la Malinche, villanos de México</p>
                 </div>
-                <div class="col-5 museo-marco"  data-element="mito-grito">
+                <div class="col-md-5 museo-marco"  data-element="mito-grito">
                     <img src="./assets/grito_independencia.jpeg" style="width: 100%;">
                     <p class="lead border border-secondary d-inline-block p-2">El Grito de Independencia</p>
                 </div>
-                <div class="col-3 museo-marco" data-element="mito-heroes">
+                <div class="col-md-3 museo-marco" data-element="mito-heroes">
                     <img src="./assets/miguel_hidalgo.jpg" style="width: 100%;">
                     <p class="lead border border-secondary d-inline-block p-2">Ejercito y héroes de la libertad</p>
                 </div>
-                <div class="col-6 museo-marco" data-element="mito-iturbide">
+                <div class="col-md-6 museo-marco" data-element="mito-iturbide">
                     <img src="./assets/ejercito_trigarante.jpg" style="width: 100%;">
                     <p class="lead border border-secondary d-inline-block p-2">Triunfo de la Independencia</p>
                 </div>
-                <div class="col-6 museo-marco" data-element="mito-republica">
+                <div class="col-md-6 museo-marco" data-element="mito-republica">
                     <img src="./assets/benito.jpg" style="width: 100%;">
                     <p class="lead border border-secondary d-inline-block p-2">La República Democrática</p>
                 </div>
-                <div class="col-6 museo-marco" data-element="mito-revolucion">
+                <div class="col-md-6 museo-marco" data-element="mito-revolucion">
                     <img src="./assets/revolucion.jpg" style="width: 100%;">
                     <p class="lead border border-secondary d-inline-block p-2">La revolución, un pueblo unido</p>
                 </div>
@@ -277,14 +291,18 @@
 
         function loadCuadro(mitoId) {
             currMito = mitos.filter(m => m.id == mitoId)[0];
-            hasChanged = true;
             console.log("Mito: " + currMito.id);
-
+            
             $('.secc-secreto').each((ind,el) => {
                 let secretoEl = $(el);
                 if (!secretoEl.hasClass('d-none')) secretoEl.addClass('d-none');
             });
             $(`#s-${currMito.id}`).removeClass('d-none');
+
+
+            
+            hasChanged = true;
+            draw();
         }
 
         function scrollTo(elId) {
@@ -330,45 +348,73 @@
         let debugMode = false;
 
         // Cargar los cuadros del museo
-        function preload() {
-            for(let mito of mitos) {
-                cuadros[mito.id] = loadImage(mito.imgPath);
-            }
-        }
+        // function preload() {
+        //     for(let mito of mitos) {
+        //         cuadros[mito.id] = loadImage(mito.imgPath);
+        //     }
+        // }
 
         function setup() {
             createCanvas(WIDTH, HEIGHT);
-            bg = createGraphics(WIDTH, HEIGHT);
-            pg = createGraphics(WIDTH, HEIGHT);
+            noLoop();
+            // bg = createGraphics(WIDTH, HEIGHT);
+            // pg = createGraphics(WIDTH, HEIGHT);
         }
 
         function draw() {
             // Actualizar Canvas de Cuadro Mito con el seleccionado por el usuario
             if (hasChanged) {
                 hasChanged = false;
-                pg.clear();
-                bg.image(cuadros[currMito.id], 0, 0, WIDTH, HEIGHT);
-                hasShowableCuadro = true;
+                hasShowableCuadro = false;
+
+                if (cuadros[currMito.id]) {
+                    console.log("Using cache for " + currMito.id);
+                    blendMode(ADD);
+                    clear();
+                    image(cuadros[currMito.id], 0, 0, WIDTH, HEIGHT);
+                    hasShowableCuadro = true;
+                } else {
+                    console.log("Loading... " + currMito.id);
+                    loadImage(currMito.imgPath, img => {
+                        console.log("Loaded: " + currMito.id);
+                        cuadros[currMito.id] = img;
+
+                        blendMode(ADD);
+                        clear();
+                        image(cuadros[currMito.id], 0, 0, WIDTH, HEIGHT);
+                        hasShowableCuadro = true;
+                    });
+
+                }
+
+                // pg.clear();
+                // bg.image(cuadros[currMito.id], 0, 0, WIDTH, HEIGHT);
+                // if (hasShowableCuadro) {
+                //     blendMode(ADD);
+                //     clear();
+                //     image(cuadros[currMito.id], 0, 0, WIDTH, HEIGHT);
+                //     hasShowableCuadro = true;
+                // }
             }
 
             // Si hay cuadro para mostrar, mostrar el cuadro en donde el usuario no haya "rascado" (pintado blanco en pg)
-            if (hasShowableCuadro) {
-                clear();
-                pg.loadPixels();
-                bg.loadPixels();
+            // if (hasShowableCuadro) {
+                // clear();
+                // pg.loadPixels();
+                // bg.loadPixels();
     
-                loadPixels();
-                for (let i = 0; i < WIDTH * HEIGHT; i++) {
-                    if (pg.pixels[4*i + 3] == 0)
-                    {
-                        pixels[4*i + 0] = bg.pixels[4*i + 0];
-                        pixels[4*i + 1] = bg.pixels[4*i + 1];
-                        pixels[4*i + 2] = bg.pixels[4*i + 2];
-                        pixels[4*i + 3] = (debugMode ? cuadroAlpha : bg.pixels[4*i + 3]);
-                    }
-                }
-                updatePixels();
-            }
+                // loadPixels();
+                // for (let i = 0; i < WIDTH * HEIGHT; i++) {
+                //     if (pg.pixels[4*i + 3] == 0)
+                //     {
+                //         pixels[4*i + 0] = bg.pixels[4*i + 0];
+                //         pixels[4*i + 1] = bg.pixels[4*i + 1];
+                //         pixels[4*i + 2] = bg.pixels[4*i + 2];
+                //         pixels[4*i + 3] = (debugMode ? cuadroAlpha : bg.pixels[4*i + 3]);
+                //     }
+                // }
+                // updatePixels();
+            // }
         }
 
         // Pintar de blanco pg es como "rascar" la imagen
@@ -376,9 +422,10 @@
             let mx = mouseX,
                 my = mouseY;
 
-            pg.fill(255);
-            pg.noStroke();
-            pg.circle(mx, my, 25);
+            blendMode(REMOVE);
+            fill(255, 255, 255, 255);
+            noStroke();
+            circle(mx, my, 25);
         }
 
 
