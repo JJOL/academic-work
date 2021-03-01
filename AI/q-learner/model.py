@@ -4,99 +4,104 @@ import random
 import time
 # from IPython.display import clear_output
 
-env = gym.make("FrozenLake-v0")
 
-action_space_size = env.action_space.n
-state_space_size = env.observation_space.n
+def initModel(envName):
+    env = gym.make(envName)
 
-q_table = np.zeros((state_space_size, action_space_size))
+    action_space_size = env.action_space.n
+    state_space_size = env.observation_space.n
 
-# Hyper Parameters
-n_episodes = 9000
-max_steps_per_episode = 100
+    q_table = np.zeros((state_space_size, action_space_size))
 
-learning_rate = 0.1
-discount_rate = 0.99
-
-exploration_rate = 1
-max_exploration_rate = 1
-min_exploration_rate = 0.002
-exploration_decay_rate = 0.003
-
-rewards_all_episodes = []
+    return q_table, env
 
 
+def trainModel(model, world, *params):
+    q_table = model
+    env = world
+    n_episodes, max_steps_per_episode, learning_rate, discount_rate, min_exploration_rate, exploration_decay_rate = params
 
-# Q-Learning
-for episode in range(n_episodes):
-    state = env.reset()
+    # Hyper Parameters
+    max_exploration_rate = 1
+    exploration_rate = 1
+    rewards_all_episodes = []
+
+    debug_episode_count = int(n_episodes / 10)
     
-    done = False
-    rewards_current_episode = 0
-    
-    for step in range(max_steps_per_episode):
+    # Q-Learning
+    for episode in range(n_episodes):
+        if episode % debug_episode_count == 0:
+            print("Training episode %d..." % (episode,))
+        state = env.reset()
         
-        exploration_rate_threshold = random.uniform(0, 1)
-        if (exploration_rate_threshold > exploration_rate):
-            action = np.argmax(q_table[state, :])
-        else:
-            action = env.action_space.sample()
+        done = False
+        rewards_current_episode = 0
+        
+        for step in range(max_steps_per_episode):
             
-        new_state, reward, done, info = env.step(action)
-        
-        # Update Q-table for Q(s,a)
-        q_table[state, action] = (1 - learning_rate) * q_table[state, action] + \
-            learning_rate * (reward + discount_rate * np.max(q_table[new_state, :]))
-        
-        state = new_state
-        rewards_current_episode += reward
-        
-        if done == True:
-            break
+            exploration_rate_threshold = random.uniform(0, 1)
+            if (exploration_rate_threshold > exploration_rate):
+                action = np.argmax(q_table[state, :])
+            else:
+                action = env.action_space.sample()
+                
+            new_state, reward, done, info = env.step(action)
             
-    exploration_rate = min_exploration_rate + (max_exploration_rate - min_exploration_rate) * np.exp(-exploration_decay_rate * episode)
+            # Update Q-table for Q(s,a)
+            q_table[state, action] = (1 - learning_rate) * q_table[state, action] + \
+                learning_rate * (reward + discount_rate * np.max(q_table[new_state, :]))
             
-    rewards_all_episodes.append(rewards_current_episode)
+            state = new_state
+            rewards_current_episode += reward
+            
+            if done == True:
+                break
+                
+        exploration_rate = min_exploration_rate + (max_exploration_rate - min_exploration_rate) * np.exp(-exploration_decay_rate * episode)
+                
+        rewards_all_episodes.append(rewards_current_episode)
 
-rewards_per_thousand_episodes = np.split(np.array(rewards_all_episodes), n_episodes/1000)
-count = 1000
-print("********Average reward per thousand episodes*******\n")
-for r in rewards_per_thousand_episodes:
-    print(count, ": ", str(sum(r/1000)))
-    count += 1000
+    rewards_per_thousand_episodes = np.split(np.array(rewards_all_episodes), n_episodes/1000)
+    count = 1000
+    print("********Average reward per thousand episodes*******\n")
+    for r in rewards_per_thousand_episodes:
+        print(count, ": ", str(sum(r/1000)))
+        count += 1000
 
-print("\n\n*******Q-table**************\n")
-print(q_table)
+    print("\n\n*******Q-table**************\n")
+    print(q_table)
 
 
 # Play Game
-
-for episode in range(3):
-    state - env.reset()
-    done = False
-    print("*******Episode %d*******\n\n\n" % (episode+1,))
-    time.sleep(1)
-    
-    for step in range(max_steps_per_episode):
-        # clear_output(wait=True)
-        env.render()
-        time.sleep(0.3)
+def playModel(model, world, max_steps_per_episode, victory_reward):
+    q_table = model
+    env = world
+    for episode in range(3):
+        state = env.reset()
+        done = False
+        print("*******Episode %d*******\n\n\n" % (episode+1,))
+        time.sleep(1)
         
-        action = np.argmax(q_table[state, :])
-        new_state, reward, done, info = env.step(action)
-        
-        if done:
+        for step in range(max_steps_per_episode):
             # clear_output(wait=True)
             env.render()
-            if (reward == 1):
-                print("****Agent reached the goal!****")
-                time.sleep(3)
-            else:
-                print("****You fell through a hole!****")
-                time.sleep(3)
-            # clear_output(wait=True)
-            break
+            time.sleep(0.3)
             
-        state = new_state
-        
-env.close()
+            action = np.argmax(q_table[state, :])
+            new_state, reward, done, info = env.step(action)
+            
+            if done:
+                # clear_output(wait=True)
+                env.render()
+                if (reward == victory_reward):
+                    print("****Agent reached the goal!****")
+                    time.sleep(3)
+                else:
+                    print("****You fell through a hole!****")
+                    time.sleep(3)
+                # clear_output(waiclt=True)
+                break
+                
+            state = new_state
+            
+    env.close()
