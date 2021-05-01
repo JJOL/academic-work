@@ -1,14 +1,17 @@
 let colors = [];
+let POINT_OUTER_WEIGHT = 15;
+let POINT_WEIGHT = 10;
 
 let C = 100;
 let alpha = 0.002;
 let COST_THRESH = 0.001;
 //  [-0.0188778656858697, -0.029626756811370558, -0.0795166809900494]
-let W = [Math.random()*600 - 300, 1, 1];
+// let W = [Math.random()*600 - 300, 1, 1];
+let W = [0, 1, -1];
 let BestW = W, BestLoss;
-// let W = [1, 1, 1];
 
 let stochasticIndex = 0;
+let stochasticDescent = false;
 let iterations = 0;
 
 let dataX = [
@@ -32,43 +35,57 @@ for (let i = 0; i < dataX.length; i++) {
 let train = false;
 let error_hist = [];
 
-function ext_hinge_error(W, x, real) {
-    let hinge_loss = 0.0;
-    let N = x.length;
 
+function svmCost(W, xs, real) {
+    let hinge_loss = 0.0;
+    let N = xs.length;
+
+    // Compute Hinge Loss
     for (let i = 0; i < N; i++) {
-        hinge_loss += Math.max(0, 1 - real[i]*predict(W, x[i]));
+        hinge_loss += Math.max(0, 1 - real[i]*score(W, xs[i]));
     }
     hinge_loss = C * (hinge_loss / N);
 
+    // Add to Cost SVM Margin Minimization
     let error = hinge_loss + (1.0/2.0)*mag2(W);
 
     return error;
 }
 
-function update(W, x, real) {
-
+function update(W, xs, real) {
     let cW = [...W];
-
-    let N = x.length;
+    let N = xs.length;
 
     for (let j = 0; j < cW.length; j++) {
+        // Compute SubGrad for Parameter j
         let grad = 0.0;
         for (let i = 0; i < N; i++) {
-            if (Math.max(0, 1 - real[i] * predict(cW, x[i])) == 0) {
+            if (Math.max(0, 1 - real[i] * score(cW, xs[i])) == 0) {
                 grad += cW[j];
             }
             else {
-                grad += cW[j] - C*real[i]*x[i][j];
+                grad += cW[j] - C*real[i]*xs[i][j];
             }
         }
-    
         grad /= N;
 
+        // Update Parameter j
         cW[j] = cW[j] - alpha*grad;
     }
 
     return cW;
+}
+
+function wToStr(W) {
+    return `${W[1].toFixed(4)}x + ${W[2].toFixed(4)}y - ${W[0].toFixed(4)}`;
+}
+
+function sMiniMax(x, min, max) {
+    return (x = min) / (max - min);
+}
+
+function iMiniMax(ux, min, max) {
+    return ux * (max - min) + min;
 }
 
 function computeMinMax(points) {
@@ -85,8 +102,8 @@ function computeMinMax(points) {
     }
 }
 
-function normInstance(x) {
-    return [x[0], (x[1] - Min[1]) / (Max[1] - Min[1]), (x[2] - Min[2]) / (Max[2] - Min[2])];
+function normInstance(x) { 
+    return [x[0], sMiniMax(x[1], Min[0], Max[0]), sMiniMax(x[2], Min[1], Max[1])];
 }
 
 function normXs(xs) {
@@ -95,7 +112,7 @@ function normXs(xs) {
     });
 }
 
-function predict(W, x) {
+function score(W, x) {
     let score = 0;
     for (let j = 0; j < W.length; j++) {
         score += x[j] * W[j];
@@ -104,7 +121,7 @@ function predict(W, x) {
     return score;
 }
 
-// function predict(x) {
+// function score(x) {
 //     let score = 0;
     
 //     let diff = 0;
@@ -134,6 +151,14 @@ function mag2(W) {
 function cToInd(label) {
     return label == 1 ? 0 : 1;
 }
+function T(point) {
+    return [point[0] - width/2, 
+            -1*point[1] + height/2];
+}
+
+function TInv(point) {
+
+}
 
 function setup() {
     createCanvas(640, 480);
@@ -144,16 +169,25 @@ function setup() {
     ];
 
     shuffleArray(points);
+
+    C_slider = createSlider(0, 100, C, 0);
+    C_slider.position(10,60);
+    C_slider.style('width', '80px');
+
+    ResetToBest_button = createButton('Set to Best');
+    ResetToBest_button.position(10, 170);
+    ResetToBest_button.mousePressed(() => {
+        W = BestW;
+    });
+
+    Stochastic_checkbox = createCheckbox('Stochastic Descent');
+    Stochastic_checkbox.position(10, 10);
+    Stochastic_checkbox.changed(() => {
+        stochasticDescent = Stochastic_checkbox.checked();
+    })
+
 }
 
-function T(point) {
-    return [point[0] - width/2, 
-            -1*point[1] + height/2];
-}
-
-function TInv(point) {
-
-}
 
 function draw() {
     fill(255);
@@ -163,9 +197,18 @@ function draw() {
     fill(0);
 
     if (error_hist.length > 0)
-        text(error_hist[error_hist.length-1], 10, 10);
+        text("Cost: " + error_hist[error_hist.length-1].toFixed(4), 10, 10);
 
     text("Iter #: " + iterations, 10, 30);
+
+    C = C_slider.value();
+    text("C: " + C, 10, 50);
+
+    text("Curr W:", 10, 100);
+    text(wToStr(W), 10, 110);
+
+    text("Best W:", 10, 130);
+    text(wToStr(BestW), 10, 140);
     
     translate(width/2, height/2);
     scale(1, -1);
@@ -176,8 +219,8 @@ function draw() {
     drawDecisionBoundary(BestW);
     
     for (let p of points) {
-        strokeWeight(13);
-        if (predict(BestW, [-1, ...p.x]) >= 0) {
+        strokeWeight(POINT_OUTER_WEIGHT);
+        if (score(BestW, [-1, ...p.x]) >= 0) {
             stroke(0, 0, 0);
         } else {
             stroke(0, 255, 255);
@@ -187,30 +230,39 @@ function draw() {
         let lInd = cToInd(p.label);
         fill(colors[lInd]);
         stroke(colors[lInd]);
-        strokeWeight(10);
+        strokeWeight(POINT_WEIGHT);
         point(p.x[0], p.x[1]);
     }
 
+    
 
     if (train) {
+
+
         shuffleArray(points);
 
         let ys = points.map(p => p.label);
         // let xs = points.map(p => [-1, p.x[0]/(width/2), p.x[1]/(height/2)]);
         let xs = points.map(p => [-1, ...p.x]);
         
-        // xs = xs.slice(stochasticIndex, stochasticIndex+1);
-        // ys = ys.slice(stochasticIndex, stochasticIndex+1);
-
+        if (stochasticDescent) {
+            xs = xs.slice(stochasticIndex, stochasticIndex+1);
+            ys = ys.slice(stochasticIndex, stochasticIndex+1);
+        }
+        
         W = update(W, xs, ys);
-        // stochasticIndex = stochasticIndex + 1;
-        // if (stochasticIndex == points.length) {
-        //     stochasticIndex = 0;
-        //     iterations += 1;
-        // }
-        iterations += 1;
 
-        let loss = ext_hinge_error(W, xs, ys);
+        if (stochasticDescent) {
+            stochasticIndex = stochasticIndex + 1;
+            if (stochasticIndex == points.length) {
+                stochasticIndex = 0;
+                iterations += 1;
+            }
+        } else {
+            iterations += 1;
+        }
+
+        let loss = svmCost(W, xs, ys);
         error_hist.push(loss);
 
         if (loss < BestLoss) {
@@ -234,8 +286,16 @@ function draw() {
 function drawDecisionBoundary(W) {
     let bx1 = -width/2,
         bx2 = width/2;
+
+    let ux1 = sMiniMax(bx1, Min[0], Max[0]),
+        ux2 = sMiniMax(bx2, Min[0], Max[0]);
+    
     let by1 = (-W[1]*bx1 + W[0]) / W[2],
         by2 = (-W[1]*bx2 + W[0]) / W[2];
+
+    // let by1 = iMiniMax(uy1, Min[1], Max[1]),
+    //     by2 = iMiniMax(uy2, Min[1], Max[1]);
+
     let v1 = new p5.Vector(bx1, by1),
         v2 = new p5.Vector(bx2, by2);
 
@@ -286,15 +346,20 @@ function keyPressed() {
 
     else if (keyCode == ENTER) {
 
-        let ys = points.map(p => p.label);
-        let xs = points.map(p => [1, ...p.x]);
-
-        computeMinMax(points);
-
-        let initialLoss = ext_hinge_error(W, xs, ys);
-        console.log("Error: " + initialLoss);
-        BestLoss = initialLoss;
-        train = true;
+        if (!train) {
+            // TRAIN!
+            computeMinMax(points);
+            let ys = points.map(p => p.label);
+            let xs = points.map(p => [1, ...p.x]);
+    
+            let initialLoss = svmCost(W, xs, ys);
+            console.log("Error: " + initialLoss);
+            BestLoss = initialLoss;
+            train = true;
+        }
+        else {
+            train = false;
+        }
     }
 
 
