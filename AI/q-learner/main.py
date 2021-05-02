@@ -1,14 +1,34 @@
+"""
+Author: Juan Jose Olivera
+Name: Q-Agent Gym Lab
+Description: A small CLI lab for running simple Q-Learning Tabled Agents on small GYM games
+"""
+
 import model as qm
 
+ENV_OPTIONS = []
+ENV_VICTORY_REWARDS = []
+
+def register_game(name, victory_rewards):
+    ENV_OPTIONS.append(name)
+    ENV_VICTORY_REWARDS.append(victory_rewards)
+
+def inputOrDefault(msg, default):
+    inp_str = input(msg)
+    if (len(inp_str) == 0):
+        return default
+    else:
+        return inp_str
 
 if __name__ == "__main__":
-
-    ENV_OPTIONS = ["FrozenLake-v0", "Taxi-v3"]
-    ENV_VICTORY_REWARDS = [1, 20]
+    # Register supported games
+    register_game("FrozenLake-v0", 1)
+    register_game("Taxi-v3", 20)
 
     print("Welcome to Q-Learner")
     print("A simple experimental lab for small reinforcement learning models\n\n")
 
+    # Train and Run many Models
     while True:
         opt = str(input("Do you want to train and test a model (Y/n)? "))
         if opt == 'n' or opt == 'N':
@@ -28,14 +48,14 @@ if __name__ == "__main__":
         selectedEnv = ENV_OPTIONS[envOpt - 1]
 
         # Get Hyper Parameters
-        n_episodes = int(input("N Episodes (8000): "))
-        max_steps_per_episode = int(input("Max steps per episode (100): "))
+        n_episodes = int(inputOrDefault("N Episodes (8000): ", 8000))
+        max_steps_per_episode = int(inputOrDefault("Max steps per episode (100): ", 100))
 
-        learning_rate = float(input("Learning Rate (0.1): "))
-        discount_rate = float(input("Discounting Rate (0.99): "))
+        learning_rate = float(inputOrDefault("Learning Rate (0.1): ", 0.1))
+        discount_rate = float(inputOrDefault("Discounting Rate (0.99): ", 0.99))
 
-        min_exploration_rate = float(input("Exploration Rate Minimum (0.002): "))
-        exploration_decay_rate = float(input("Exploration Rate Decay (0.003): "))
+        min_exploration_rate = float(inputOrDefault("Exploration Rate Minimum (0.002): ", 0.002))
+        exploration_decay_rate = float(inputOrDefault("Exploration Rate Decay (0.003): ", 0.003))
 
         # Train Model
         model, world = qm.initModel(selectedEnv)
