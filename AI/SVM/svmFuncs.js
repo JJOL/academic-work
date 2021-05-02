@@ -1,3 +1,12 @@
+/**
+ * Author: Juan Jo Olivera
+ * Name: LinearSVM Java Script Implementation
+ * Description: A simple graphical implementation of a Linear SVM on 2 dimensional points.
+ * The cost function is the regularization strength parametized cost and the optimizer used
+ * is Subgradient descent with fixed step size.
+ * 
+ */
+
 // Space Transformation Functions
 class Transform {
     T1(p) {
