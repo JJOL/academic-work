@@ -35,6 +35,8 @@ let lrInCtl;
 let stochCheckBox;
 let restoreBestBtn;
 let resetLearningBtn;
+let maxIterInCtl;
+let errThreshrInCtl;
 
 function setup() {
     createCanvas(640, 640);
@@ -61,7 +63,17 @@ function setup() {
     restoreBestBtn.mousePressed(() => restoreBestSVN());
     resetLearningBtn = createButton('Reset Learning');
     resetLearningBtn.position(15, 200);
-    restoreBestBtn.mousePressed(() => resetLearning());
+    resetLearningBtn.mousePressed(() => resetLearning());
+    maxIterInCtl = createInput(MAX_ITERS);
+    maxIterInCtl.position(600, 585);
+    maxIterInCtl.style('width', '40px');
+    maxIterInCtl.style('height', '10px');
+    maxIterInCtl.input(() => MAX_ITERS = parseFloat(maxIterInCtl.value()));
+    errThreshrInCtl = createInput(ERR_THRESHOLD);
+    errThreshrInCtl.position(600, 605);
+    errThreshrInCtl.style('width', '40px');
+    errThreshrInCtl.style('height', '10px');
+    errThreshrInCtl.input(() => ERR_THRESHOLD = parseFloat(errThreshrInCtl.value()));
 
 }
 
@@ -150,6 +162,8 @@ function drawInfo() {
     text(bestSVM.toString(), 10, 163);
 
     text("Iter #"+optimizer.iter, 10, 250);
+    text("Max Iter: ", 520, 590);
+    text("Error Thresh: ", 520, 610);
     if (optimizer.lastCost)
         text("Cost: " + optimizer.lastCost.toFixed(4), 10, 270);
 }
@@ -189,6 +203,7 @@ function restoreBestSVN() {
 function resetLearning() {
     currSVM = new SVMModel();
     bestSVM = new SVMModel(currSVM);
+    optimizer = new SVMOptimizer(currSVM, bestSVM, points);
 }
 
 function addPoint(mx, my, label) {

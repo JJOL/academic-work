@@ -87,6 +87,8 @@ function dot(v, u) {
     return s;
 }
 
+let c = 1;
+let d = 2;
 
 class SVMModel {
     constructor(other) {
@@ -101,6 +103,13 @@ class SVMModel {
     }
 
     score(x) {
+        // let c = 1;
+        // let d = 2;
+        // let diff = [this.W[0] - x[0], this.W[1] - x[1], this.W[2] - x[2]];
+        // return Math.exp(-Math.sqrt(dot(diff, diff)));
+        // return Math.pow(dot(this.W, x) + c, d);
+        // let r = Math.sqrt(x[1]*x[1] + x[2]*x[2]);
+        // return dot(this.W, [-1, r, x]);
         return dot(this.W, x);
     }
 
@@ -228,8 +237,8 @@ class SVMOptimizer {
 
     stopTraining() {
         training = false;
-        console.log("Min Error: " + this.errorHistory[errN-1]);
-                console.log("Trained!");
+        console.log("Min Error: " + this.lastCost);
+        console.log("Trained!");
     }
 
     get lastCost() {
