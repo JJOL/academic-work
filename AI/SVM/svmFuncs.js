@@ -124,9 +124,16 @@ class SVMModel {
         hingeLoss = C * (hingeLoss / N);
 
         // Add to Cost SVM Margin Minimization
-        let error = hingeLoss + (1/2) * dot(this.W, this.W);
+        let w = [this.W[1], this.W[2]];
+        let marginLoss = (1/2) * dot(w, w);
+        
+        let totalLoss = hingeLoss + marginLoss;
 
-        return error;
+        return {
+            hingeLoss: hingeLoss,
+            marginLoss: marginLoss,
+            totalLoss: totalLoss
+        };
     }
 
     computeSubGradient(xs, ys) {
@@ -167,15 +174,21 @@ class SVMModel {
 }
 
 class SVMOptimizer {
-    constructor(currentSVM, bestSVM, points) {
+    constructor(currentSVM, bestSVM, points, updateErrorGraphCb) {
         this.iter = 0;
         this.currentSVM = currentSVM;
         this.bestSVM = bestSVM;
         this.points = points;
 
         this.errorHistory = [];
+
+        this.hingeLossHistory = [];
+        this.marginLossHistory = [];
+
         this.bestLoss = 0;
         this.stochasticIndex = 0;
+
+        this.updateErrorGraphCb = updateErrorGraphCb;
     }
 
     beforeTrainStart() {
@@ -184,7 +197,7 @@ class SVMOptimizer {
             this.points.map(p => p.y)); // ys
 
         console.log("Initial Loss: " + initialLoss);
-        this.bestLoss = initialLoss;
+        this.bestLoss = initialLoss.totalLoss;
     }
 
     update() {
@@ -214,10 +227,13 @@ class SVMOptimizer {
         }
 
         let loss = this.currentSVM.computeCost(xs, ys);
-        this.errorHistory.push(loss);
+        let totalLoss = loss.totalLoss;
+        this.errorHistory.push(loss.totalLoss);
+        this.marginLossHistory.push(loss.marginLoss);
+        this.hingeLossHistory.push(loss.hingeLoss);
 
-        if (loss < this.bestLoss) {
-            this.bestLoss = loss;
+        if (totalLoss < this.bestLoss) {
+            this.bestLoss = totalLoss;
             this.bestSVM.set(this.currentSVM);
         }
 
@@ -239,6 +255,7 @@ class SVMOptimizer {
         training = false;
         console.log("Min Error: " + this.lastCost);
         console.log("Trained!");
+        this.updateErrorGraphCb(this.errorHistory, this.hingeLossHistory, this.marginLossHistory);
     }
 
     get lastCost() {

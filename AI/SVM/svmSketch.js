@@ -14,7 +14,7 @@ let points = [];
 let currSVM = new SVMModel();
 let bestSVM = new SVMModel(currSVM);
 
-let optimizer = new SVMOptimizer(currSVM, bestSVM, points);
+let optimizer = new SVMOptimizer(currSVM, bestSVM, points, updateErrorGraph);
 
 let training = false;
 
@@ -38,8 +38,12 @@ let resetLearningBtn;
 let maxIterInCtl;
 let errThreshrInCtl;
 
+let hingeChart, marginChart, totalChart;
+
 function setup() {
-    createCanvas(640, 640);
+    var canvas = createCanvas(640, 640);
+    canvas.parent('grapher-container');
+
     VISUALS = new PointsVisualization();
 
     rstBtn = createButton('Reset');
@@ -75,6 +79,7 @@ function setup() {
     errThreshrInCtl.style('height', '10px');
     errThreshrInCtl.input(() => ERR_THRESHOLD = parseFloat(errThreshrInCtl.value()));
 
+    createErrorGraphElements();
 }
 
 function draw() {
@@ -193,7 +198,7 @@ function resetAll() {
 
     currSVM = new SVMModel();
     bestSVM = new SVMModel(currSVM);
-    optimizer = new SVMOptimizer(currSVM, bestSVM, points);
+    optimizer = new SVMOptimizer(currSVM, bestSVM, points, updateErrorGraph);
 }
 
 function restoreBestSVN() {
@@ -203,7 +208,7 @@ function restoreBestSVN() {
 function resetLearning() {
     currSVM = new SVMModel();
     bestSVM = new SVMModel(currSVM);
-    optimizer = new SVMOptimizer(currSVM, bestSVM, points);
+    optimizer = new SVMOptimizer(currSVM, bestSVM, points, updateErrorGraph);
 }
 
 function addPoint(mx, my, label) {
@@ -221,4 +226,77 @@ function toggleTraining() {
     else {
         training = false;
     }
+}
+
+
+
+function updateErrorGraph(totalLoss, hingeLoss, marginLoss) {
+
+    let labels = [];
+    for (let i = 0; i < hingeLoss.length; i++) {
+        labels.push(i);
+    }
+
+    totalChart.data.labels = labels;
+    totalChart.data.datasets.forEach(dataset => {
+        dataset.data = totalLoss
+    });
+    totalChart.update();
+
+    hingeChart.data.labels = labels;
+    hingeChart.data.datasets.forEach(dataset => {
+        dataset.data = hingeLoss
+    });
+    hingeChart.update();
+
+    marginChart.data.labels = labels;
+    marginChart.data.datasets.forEach(dataset => {
+        dataset.data = marginLoss
+    });
+    marginChart.update();
+}
+
+function createErrorGraphElements() {
+    var hingeCtx = document.getElementById('total-loss-graph').getContext('2d');
+    totalChart = new Chart(hingeCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Total Loss',
+                data: [],
+                fill: false,
+                borderColor: 'rgb(252, 186, 3)',
+                tension: 0.1
+            }]
+        }
+    });
+    var hingeCtx = document.getElementById('hinge-loss-graph').getContext('2d');
+    hingeChart = new Chart(hingeCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Hinge Loss',
+                data: [],
+                fill: false,
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        }
+    });
+    var marginCtx = document.getElementById('margin-loss-graph').getContext('2d');
+    marginChart = new Chart(marginCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Margin Loss',
+                data: [],
+                fill: false,
+                borderColor: 'rgb(255, 0, 255)',
+                tension: 0.1
+            }]
+        }
+    });
 }
