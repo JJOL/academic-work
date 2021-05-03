@@ -257,8 +257,8 @@ function updateErrorGraph(totalLoss, hingeLoss, marginLoss) {
 }
 
 function createErrorGraphElements() {
-    var hingeCtx = document.getElementById('total-loss-graph').getContext('2d');
-    totalChart = new Chart(hingeCtx, {
+    let totalCtx = document.getElementById('total-loss-graph').getContext('2d');
+    totalChart = new Chart(totalCtx, {
         type: 'line',
         data: {
             labels: [],
@@ -271,7 +271,7 @@ function createErrorGraphElements() {
             }]
         }
     });
-    var hingeCtx = document.getElementById('hinge-loss-graph').getContext('2d');
+    let hingeCtx = document.getElementById('hinge-loss-graph').getContext('2d');
     hingeChart = new Chart(hingeCtx, {
         type: 'line',
         data: {
@@ -285,7 +285,7 @@ function createErrorGraphElements() {
             }]
         }
     });
-    var marginCtx = document.getElementById('margin-loss-graph').getContext('2d');
+    let marginCtx = document.getElementById('margin-loss-graph').getContext('2d');
     marginChart = new Chart(marginCtx, {
         type: 'line',
         data: {
