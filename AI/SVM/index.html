@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A SVM model visualization and training lab with controls">
+    <meta name="author" content="IOWizard">
+    <meta name="keywords" content="Machine Learning, SVM">
+    <meta property="og:title" content="SVM Lab" />
+    <meta property="og:description" content="A SVM model visualization and training lab with controls" />
+    <meta property="og:image" content="https://jjol.github.io/academic-work/AI/SVM/Logo.jpg" />
+    <title>SVM Lab</title>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.3.1/lib/p5.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.2.1/dist/chart.min.js"></script>
+</head>
+<body>
+    <div>
+        <div id="grapher-container" style="display: inline-block;">
+        </div>
+        <div id="error-container" style="display: inline-block;">
+            <div id="total-error-container">
+                <canvas id="total-loss-graph" width="800" height="200"></canvas>
+            </div>
+            <div id="hinge-error-container" style="display: inline-block;">
+                <canvas id="hinge-loss-graph" width="400" height="400"></canvas>
+            </div>
+            <div id="hinge-error-container" style="display: inline-block;">
+                <canvas id="margin-loss-graph" width="400" height="400"></canvas>
+            </div>
+        </div>
+    </div>
+    <h1>SVM Lab</h1>
+    <p>Press 'p' for adding positive labeled under your mouse position.</p>
+    <p>Press 'q' for adding negative labeled under your mouse position.</p>
+    <p>Press 'Enter' for starting a learning process or to pause an ongoing one.</p>
+    <p>Press 'Reset' for erasing all data and learning data</p>
+    <p>Press 'Set Best SVM' to carry on learning from the Best SVM</p>
+    <p>Press 'Reset Learning' to erase all learning data but NOT datapoints</p>
+    <script src="svmFuncs.js"></script>
+    <script src="svmSketch.js"></script>
+</body>
+</html>
